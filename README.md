@@ -1,5 +1,5 @@
-Role Name
-=========
+Gitlab on GCE Deployment Role
+=============================
 
 A brief description of the role goes here.
 
