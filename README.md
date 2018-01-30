@@ -50,9 +50,9 @@ ansible-playbook -i contrib/inventory/gce.py --skip-tags=provision --tags=instal
       machine_type: n1-standard-1
       instance_name: gitlab-example-org
       image: debian-9
-      service_account_email: 1081628783844-compute@developer.gserviceaccount.com
-      credentials_file: ~/.gce/GCEGitlabCloud-2828f7861962.json
-      project_id: gitlab-cloud-193706
+      service_account_email: service@developer.gserviceaccount.com
+      credentials_file: ~/.gce/credentials.json
+      project_id: example-org
       domain_name: example.org
       admin_email: admin@example.org
       tags:
