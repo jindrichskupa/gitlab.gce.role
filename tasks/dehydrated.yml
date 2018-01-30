@@ -1,0 +1,72 @@
+- name: Fetch dehydrated git repository
+  git:
+    repo: https://github.com/lukas2511/dehydrated.git
+    dest: /opt/dehydrated
+    version: master
+    ssh_opts: "-o StrictHostKeyChecking=no"
+  tags:
+    - dehydrated
+    - install
+
+- name: Create dehydrated config directory
+  file:
+    path: /etc/dehydrated
+    state: directory
+    owner: root
+    group: root
+  tags:
+    - dehydrated
+    - config
+
+- name: Create dehydrated config
+  template:
+    src: dehydrated/config.j2
+    dest: /etc/dehydrated/config
+    owner: root
+    group: root
+  tags:
+    - dehydrated
+    - config
+
+- name: Create domains config
+  template:
+    src: dehydrated/letsencryptdomains.list.j2
+    dest: /etc/dehydrated/letsencryptdomains.list
+    owner: root
+    group: root
+  tags:
+    - dehydrated
+    - config
+
+- name: Create dehydrated hook
+  template:
+    src: dehydrated/dehydrated_hook.sh.j2
+    dest: /usr/local/sbin/dehydrated_hook.sh
+    owner: root
+    group: root
+    mode: 0755
+  tags:
+    - dehydrated
+    - config
+
+- name: Create dehydrated well-known directory
+  file:
+    path: /var/www/letsencrypt/.well-known/acme-challenge
+    owner: root
+    group: root
+    state: directory
+    mode: 0777
+  tags:
+    - dehydrated
+    - config
+
+- name: Add dehydrated into crontab
+  cron:
+    name: Renew SSL certificates
+    minute: 15
+    hour: 2
+    job: /opt/dehydrated/dehydrated --accept-terms --cron
+  tags:
+    - dehydrated
+    - config
+

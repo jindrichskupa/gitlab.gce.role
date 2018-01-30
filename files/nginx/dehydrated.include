@@ -1,0 +1,5 @@
+        location /.well-known/acme-challenge {
+            alias   /var/www/letsencrypt/.well-known/acme-challenge;
+            index   index.html index.htm;
+            break;
+        }

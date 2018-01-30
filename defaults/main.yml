@@ -1,0 +1,11 @@
+---
+# defaults file for gitlab.gce.role
+machine_type: n1-standard-1
+image: debian-9
+instance_name: gitlab-example-org
+service_account_email: gitlab@example.org
+credentials_file: ~/.gce/credentials.json
+project_id: example-org
+domain_name: example.org
+admin_email: admin@example.org
+

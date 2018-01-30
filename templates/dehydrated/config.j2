@@ -1,0 +1,8 @@
+# {{ ansible_managed }}
+CA="https://acme-v01.api.letsencrypt.org/directory"
+WELLKNOWN="/var/www/letsencrypt/.well-known/acme-challenge"
+RENEW_DAYS="14"
+DOMAINS_TXT=/etc/dehydrated/letsencryptdomains.list
+CERTDIR="/etc/letsencrypt/live/"
+CONTACT_EMAIL="{{ admin_email }}"
+HOOK="/usr/local/sbin/dehydrated_hook.sh"

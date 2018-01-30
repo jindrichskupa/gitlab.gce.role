@@ -1,0 +1,43 @@
+---
+- name: Launch instances
+  gce:
+      instance_names: "{{ instance_name }}"
+      machine_type: "{{ machine_type }}"
+      image: "{{ image }}"
+      service_account_email: "{{ service_account_email }}"
+      credentials_file: "{{ credentials_file }}"
+      project_id: "{{ project_id }}"
+  register: gce
+  tags:
+    - gce
+
+- name: Save host data
+  add_host:
+      hostname: "{{ item.public_ip }}"
+      groupname: gce_instances_ips
+  with_items: "{{ gce.instance_data }}"
+  tags:
+    - gce
+
+- name: Wait for SSH for instances
+  wait_for:
+      delay: 1
+      host: "{{ item.public_ip }}"
+      port: 22
+      state: started
+      timeout: 60
+  with_items: "{{ gce.instance_data }}"
+  tags:
+    - gce
+    
+- name: 'Create an A for services'
+  gcdns_record:
+    service_account_email: "{{ service_account_email }}"
+    credentials_file: "{{ credentials_file }}"
+    project_id: "{{ project_id }}"
+    record: "gitlab.{{ domain_name }}"
+    zone: "{{ domain_name }}"
+    type: A
+    value: "{{ hostvars[instance_name].gce_public_ip }}"
+  tags:
+    - gce

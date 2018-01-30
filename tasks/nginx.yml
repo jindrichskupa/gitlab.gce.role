@@ -1,0 +1,123 @@
+- name: Adding APT repository key
+  when: ansible_os_family == 'Debian'
+  apt_key:
+    url: "http://nginx.org/keys/nginx_signing.key"
+    state: present
+  tags:
+    - nginx
+    - install
+
+- name: Add official APT repository
+  when: ansible_os_family == 'Debian' or ansible_os_family == 'Ubuntu'
+  apt_repository:
+    repo: "deb http://nginx.org/packages/{{ansible_distribution|lower}}/ {{ansible_distribution_release}} nginx"
+  tags:
+    - nginx
+    - install
+
+- name: Install Nginx
+  when: ansible_os_family == 'Debian'
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  with_items:
+    - nginx
+  tags:
+    - nginx
+    - install
+
+- name: Create sites enabled/available directories if needed
+  file: path="/etc/nginx/{{ item  }}" state=directory
+  with_items:
+    - sites-enabled
+    - sites-available
+    - snippets
+    - ssl
+  tags:
+    - nginx
+    - config
+
+- name: Check if sites-enabled is included in nginx
+  command: "grep sites-enabled -R /etc/nginx"
+  ignore_errors: yes
+  register: sites_enabled_check
+  tags:
+    - nginx
+    - config
+
+- name: Include sites enabled configuration
+  copy: src="nginx/include-sites.conf" dest="/etc/nginx/conf.d/include-sites.conf"
+  when: sites_enabled_check.stdout == ""
+
+- name: Prepare snippets
+  copy:
+    src: "nginx/{{ item }}"
+    dest: "/etc/nginx/snippets/{{ item }}"
+  with_items:
+    - proxy.include
+    - dehydrated.include
+  tags:
+    - nginx
+    - config
+
+- name: Configure nginx as redirect for http
+  template:
+    src: nginx/http-2-https-redirect.j2
+    dest: "/etc/nginx/sites-available/gitlab.{{ domain_name }}.conf"
+  tags:
+    - nginx
+    - config
+
+- name: Link HTTP configuration into sites-enabled
+  file:
+    src: "/etc/nginx/sites-available/gitlab.{{ domain_name }}.conf"
+    dest: "/etc/nginx/sites-enabled/gitlab.{{ domain_name }}.conf"
+    state: link
+  tags:
+    - nginx
+    - config
+
+- name: nginx restart
+  become: true
+  service: name=nginx state=restarted
+
+- name: Generate certificates
+  command: "/opt/dehydrated/dehydrated --accept-terms --cron"
+  tags:
+    - dehydrated
+    - config
+
+- name: Generate DH params
+  command: "openssl dhparam -out /etc/nginx/ssl/dh_gitlab.{{ domain_name }}.pem 2048"
+  args:
+    creates: "/etc/nginx/ssl/dh_gitlab.{{ domain_name }}.pem"
+  tags:
+    - nginx
+    - config
+
+- name: Configure nginx as proxy for https
+  template:
+    src: nginx/https-proxy.j2
+    dest: "/etc/nginx/sites-available/ssl.gitlab.{{ domain_name }}.conf"
+  tags:
+    - nginx
+    - dehydrated
+    - config
+
+- name: Link HTTPS configuration into sites-enabled
+  file:
+    src: "/etc/nginx/sites-available/ssl.gitlab.{{ domain_name }}.conf"
+    dest: "/etc/nginx/sites-enabled/ssl.gitlab.{{ domain_name  }}.conf"
+    state: link
+  tags:
+    - nginx
+    - dehydrated
+    - config
+
+- name: nginx restart
+  become: true
+  service: name=nginx state=restarted
+  tags:
+    - nginx
+    - config
