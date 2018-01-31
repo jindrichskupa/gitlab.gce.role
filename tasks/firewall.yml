@@ -1,0 +1,42 @@
+- name: Allow HTTP
+  local_action: gce_net
+  args:
+    fwname: "all-http"
+    name: "default"
+    allowed: "tcp:80"
+    state: "present"
+    service_account_email: "{{ service_account_email }}"
+    credentials_file: "{{ credentials_file }}"
+    project_id: "{{ project_id }}"
+  tags:
+    - gce
+    - firewall
+
+- name: Allow HTTPS
+  local_action: gce_net
+  args:
+    fwname: "all-https"
+    name: "default"
+    allowed: "tcp:443"
+    state: "present"
+    service_account_email: "{{ service_account_email }}"
+    credentials_file: "{{ credentials_file }}"
+    project_id: "{{ project_id }}"
+  tags:
+    - gce
+    - firewall
+
+
+- name: Allow Gitlab SSH
+  local_action: gce_net
+  args:
+    fwname: "all-gitlab-ssh"
+    name: "default"
+    allowed: "tcp:222"
+    state: "present"
+    service_account_email: "{{ service_account_email }}"
+    credentials_file: "{{ credentials_file }}"
+    project_id: "{{ project_id }}"
+  tags:
+    - gce
+    - firewall

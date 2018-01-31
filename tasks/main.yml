@@ -3,5 +3,6 @@
 - import_tasks: provision.yml
 - import_tasks: docker.yml
 - import_tasks: gitlab.yml
+- import_tasks: firewall.yml
 - import_tasks: dehydrated.yml
 - import_tasks: nginx.yml
