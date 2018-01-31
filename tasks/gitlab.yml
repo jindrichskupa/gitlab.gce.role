@@ -24,8 +24,8 @@
       GITLAB_OMNIBUS_CONFIG: |
         gitlab_rails['gitlab_shell_ssh_port'] = 222
     ports:
-      - localhost:8080:80
-      - 222:222
+      - 127.0.0.1:8080:80
+      - 0.0.0.0:222:22
   tags:
     - gitlab
     - install
